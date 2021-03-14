@@ -141,12 +141,10 @@ public class RxNettyHttpServer {
     }
 
     public static Observable<String> getUserCatalog(Observable<User> userObservable) {
-        System.out.println("ji");
         Iterator<User> users = userObservable.toBlocking().toIterable().iterator();
 
         // show price in rubbles by default if such user doesn't exist
         Currency currency = users.hasNext() ? users.next().currency : Currency.RUB;
-        System.out.println(currency);
 
         return storage
                 .getAllProducts()
