@@ -4,13 +4,15 @@ import io.netty.buffer.ByteBuf;
 import io.reactivex.netty.protocol.http.server.HttpServer;
 import io.reactivex.netty.protocol.http.server.HttpServerRequest;
 import rx.Observable;
-import rx.observables.BlockingObservable;
 import rxjava.reactive_mongo_driver.MongoStorage;
 import rxjava.reactive_mongo_driver.model.Currency;
 import rxjava.reactive_mongo_driver.model.Product;
 import rxjava.reactive_mongo_driver.model.User;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 /**
  * user_id and login are unique and are used as unique keys in db
@@ -137,17 +139,12 @@ public class RxNettyHttpServer {
             return errorMessage("'login' or 'id' is required");
         }
 
-        return getUserCatalog(user);
+        return user.flatMap(RxNettyHttpServer::getUserCatalog);
     }
 
-    public static Observable<String> getUserCatalog(Observable<User> userObservable) {
-        Iterator<User> users = userObservable.toBlocking().toIterable().iterator();
-
-        // show price in rubbles by default if such user doesn't exist
-        Currency currency = users.hasNext() ? users.next().currency : Currency.RUB;
-
+    public static Observable<String> getUserCatalog(User user) {
         return storage
                 .getAllProducts()
-                .map(p -> p.showWithCurrency(currency));
+                .map(p -> p.showWithCurrency(user.currency));
     }
 }
